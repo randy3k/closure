@@ -44,12 +44,28 @@ foo_closure <- function(x) {
     self
 }
 
-foo <- foo_closure(1)
-foo$add(3)$counter
+foo1 <- foo_closure(1)
+foo1$add(3)$counter
 #> [1] 4
 
 Foo <- toR6("Foo", foo_closure)
-foo <- Foo$new(2)
-foo$add(3)$counter
-#> [1] 5
+foo2 <- Foo$new(1)
+foo2$add(3)$counter
+#> [1] 4
+```
+
+## Why?
+
+Closures are much faster.
+
+``` r
+bench::mark(
+    closure = foo1$add(3)$counter,
+    R6 = foo2$add(3)$counter
+)
+#> # A tibble: 2 x 6
+#>   expression      min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 closure       879ns    1.1µs   567949.        0B      0  
+#> 2 R6           5.57µs   6.27µs   103778.        0B     20.8
 ```

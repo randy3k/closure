@@ -69,10 +69,23 @@ foo_closure <- function(x) {
     self
 }
 
-foo <- foo_closure(1)
-foo$add(3)$counter
+foo1 <- foo_closure(1)
+foo1$add(3)$counter
 
 Foo <- toR6("Foo", foo_closure)
-foo <- Foo$new(2)
-foo$add(3)$counter
+foo2 <- Foo$new(1)
+foo2$add(3)$counter
+
+
+```
+
+## Why?
+
+Closures are much faster.
+
+```{r}
+bench::mark(
+    closure = foo1$add(3)$counter,
+    R6 = foo2$add(3)$counter
+)
 ```
