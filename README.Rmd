@@ -1,0 +1,78 @@
+---
+output:
+  reprex::reprex_document:
+    advertise: false
+    html_preview: false
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+```{r results='asis', echo = FALSE, eval = TRUE}
+d <- read.dcf("DESCRIPTION")
+```
+
+```{r results="asis", echo = FALSE, eval = TRUE}
+title <- d[colnames(d) == "Title"]
+cat(c("# ", paste(trimws(strsplit(title, "\n")[[1]]), collapse = " ")))
+```
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+
+```{r results="asis", echo = FALSE, eval = TRUE}
+cat(d[colnames(d) == "Description"])
+```
+
+
+## Installation
+
+You can install the released version of closure from [CRAN](https://CRAN.R-project.org) with:
+
+``` r
+install.packages("closure")
+```
+
+And the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("randy3k/closure")
+```
+## Example
+
+```{r}
+library(closure)
+
+foo_closure <- function(x) {
+    self <- environment()
+    on.exit(rm(x))
+
+    counter <- NULL
+    initialize <- function(x) {
+        counter <<- x
+    }
+    add <- function(x) {
+        counter <<- counter + x
+        invisible(self)
+    }
+    initialize(x)
+    self
+}
+
+foo <- foo_closure(1)
+foo$add(3)$counter
+
+Foo <- toR6("Foo", foo_closure)
+foo <- Foo$new(2)
+foo$add(3)$counter
+```
