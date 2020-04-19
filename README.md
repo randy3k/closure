@@ -66,6 +66,6 @@ bench::mark(
 #> # A tibble: 2 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 closure       879ns    1.1µs   567949.        0B      0  
-#> 2 R6           5.57µs   6.27µs   103778.        0B     20.8
+#> 1 closure       909ns   1.12µs   690452.        0B      0  
+#> 2 R6           5.49µs   6.08µs   106857.        0B     21.4
 ```

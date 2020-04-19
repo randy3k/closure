@@ -75,8 +75,6 @@ foo1$add(3)$counter
 Foo <- toR6("Foo", foo_closure)
 foo2 <- Foo$new(1)
 foo2$add(3)$counter
-
-
 ```
 
 ## Why?
