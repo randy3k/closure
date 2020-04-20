@@ -69,20 +69,28 @@ foo1$add(3)$counter
 Foo2 <- toR6("Foo2", Foo1)
 foo2 <- Foo2$new(1)
 foo2$add(3)$counter
+
+Foo3 <- toR6("Foo3", Foo1, portable = FALSE)
+foo3 <- Foo3$new(1)
+# method chaining does not work for non portable class
+foo3$add(3)
+foo3$counter
 ```
 
-## Why?
+## Details
 
-First of all, closures are much faster.
+Why `closure` when there is `R6`? It’s because closures are much faster. Even faster than `R6` when `portable` is `TRUE`.
 
 ```{r}
 bench::mark(
-    closure = foo1$add(3)$counter,
-    R6 = foo2$add(3)$counter
+    closure = foo1$add(3),
+    R6 = foo2$add(3),
+    `R6 Portable` = foo3$add(3),
+    check = FALSE
 )
 ```
 
-And it is incredibly easier to make things wrong.
+Then why you need this package to write closure? Because it is incredibly easier to make things wrong. See the following example inspired by [advanced-R](https://adv-r.hadley.nz/function-factories.html#forcing-evaluation).
 
 ```{r}
 g <- function(k) {
@@ -95,10 +103,4 @@ h1 <- g(2)
 h2 <- g(m)
 m <- 3
 identical(h1(2), h2(2))
-```
-See also, [advanced-R](https://adv-r.hadley.nz/function-factories.html#forcing-evaluation).
-
-
-```{r}
-
 ```

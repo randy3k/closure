@@ -29,7 +29,7 @@ patch_symbols <- function(expr, public = character(0), private = character(0)) {
 
 
 #' @export
-toR6 <- function(classname, constructor) {
+toR6 <- function(classname, constructor, portable = TRUE, ...) {
     stopifnot(is.function(constructor))
 
     env <- environment(constructor)
@@ -43,11 +43,13 @@ toR6 <- function(classname, constructor) {
     public <- c(names(methods), setdiff(names(fields), arg_names))
     private <- list()
 
-    for (m in seq_along(methods)) {
-        methods[[m]] <- patch_symbols(methods[[m]], public, private)
+    if (portable) {
+        for (m in seq_along(methods)) {
+            methods[[m]] <- patch_symbols(methods[[m]], public, private)
+        }
     }
 
-    cls <- R6::R6Class(classname, parent_env = env)
+    cls <- R6::R6Class(classname, portable = portable, parent_env = env, ...)
     for (n in names(fields)) {
         x <- eval(fields[[n]], envir = env)
         cls$set("public", n, x)

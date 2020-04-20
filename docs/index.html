@@ -69,7 +69,6 @@
 <div id="tools-to-create-and-manipulate-closures" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#tools-to-create-and-manipulate-closures" class="anchor"></a>Tools to create and manipulate closures</h1></div>
-<p><strong>WORKING IN PROGESS</strong></p>
 <!-- badges: start -->
 <!-- badges: end -->
 <p>Closures are often a poorman alternative to OOP (object oriental programming), not only because they could be easier implemented but because they are fast. However, it is quite easy to get things wrong if one is not careful enough. Tools are provided to create and manipulate closures.</p>
@@ -104,22 +103,32 @@
 <span class="no">Foo2</span> <span class="kw">&lt;-</span> <span class="fu">toR6</span>(<span class="st">"Foo2"</span>, <span class="no">Foo1</span>)
 <span class="no">foo2</span> <span class="kw">&lt;-</span> <span class="no">Foo2</span>$<span class="fu">new</span>(<span class="fl">1</span>)
 <span class="no">foo2</span>$<span class="fu">add</span>(<span class="fl">3</span>)$<span class="no">counter</span>
+<span class="co">#&gt; [1] 4</span>
+
+<span class="no">Foo3</span> <span class="kw">&lt;-</span> <span class="fu">toR6</span>(<span class="st">"Foo3"</span>, <span class="no">Foo1</span>, <span class="kw">portable</span> <span class="kw">=</span> <span class="fl">FALSE</span>)
+<span class="no">foo3</span> <span class="kw">&lt;-</span> <span class="no">Foo3</span>$<span class="fu">new</span>(<span class="fl">1</span>)
+<span class="co"># method chaining does not work for non portable class</span>
+<span class="no">foo3</span>$<span class="fu">add</span>(<span class="fl">3</span>)
+<span class="no">foo3</span>$<span class="no">counter</span>
 <span class="co">#&gt; [1] 4</span></pre></div>
 </div>
-<div id="why" class="section level2">
+<div id="details" class="section level2">
 <h2 class="hasAnchor">
-<a href="#why" class="anchor"></a>Why?</h2>
-<p>First of all, closures are much faster.</p>
+<a href="#details" class="anchor"></a>Details</h2>
+<p>Why <code>closure</code> when there is <code>R6</code>? It’s because closures are much faster. Even faster than <code>R6</code> when <code>portable</code> is <code>TRUE</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="r"><span class="kw pkg">bench</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/bench/man/mark.html">mark</a></span>(
-    <span class="kw">closure</span> <span class="kw">=</span> <span class="no">foo1</span>$<span class="fu">add</span>(<span class="fl">3</span>)$<span class="no">counter</span>,
-    <span class="kw">R6</span> <span class="kw">=</span> <span class="no">foo2</span>$<span class="fu">add</span>(<span class="fl">3</span>)$<span class="no">counter</span>
+    <span class="kw">closure</span> <span class="kw">=</span> <span class="no">foo1</span>$<span class="fu">add</span>(<span class="fl">3</span>),
+    <span class="kw">R6</span> <span class="kw">=</span> <span class="no">foo2</span>$<span class="fu">add</span>(<span class="fl">3</span>),
+    <span class="kw">`R6 Portable`</span> <span class="kw">=</span> <span class="no">foo3</span>$<span class="fu">add</span>(<span class="fl">3</span>),
+    <span class="kw">check</span> <span class="kw">=</span> <span class="fl">FALSE</span>
 )
-<span class="co">#&gt; # A tibble: 2 x 6</span>
-<span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span>
-<span class="co">#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span>
-<span class="co">#&gt; 1 closure      1.07µs   1.28µs   471158.        0B      0  </span>
-<span class="co">#&gt; 2 R6           5.99µs   6.69µs    95307.        0B     19.1</span></pre></div>
-<p>And it is incredibly easier to make things wrong.</p>
+<span class="co">#&gt; # A tibble: 3 x 6</span>
+<span class="co">#&gt;   expression       min   median `itr/sec` mem_alloc `gc/sec`</span>
+<span class="co">#&gt;   &lt;bch:expr&gt;  &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 closure        704ns    839ns   714172.        0B     71.4</span>
+<span class="co">#&gt; 2 R6               4µs    4.6µs   158280.        0B     15.8</span>
+<span class="co">#&gt; 3 R6 Portable   1.75µs      2µs   344639.        0B      0</span></pre></div>
+<p>Then why you need this package to write closure? Because it is incredibly easier to make things wrong. See the following example inspired by <a href="https://adv-r.hadley.nz/function-factories.html#forcing-evaluation">advanced-R</a>.</p>
 <div class="sourceCode" id="cb5"><pre class="r"><span class="no">g</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">k</span>) {
     <span class="kw">function</span>(<span class="no">x</span>) {
         <span class="no">x</span>^<span class="no">k</span>
@@ -131,7 +140,6 @@
 <span class="no">m</span> <span class="kw">&lt;-</span> <span class="fl">3</span>
 <span class="fu"><a href="https://rdrr.io/r/base/identical.html">identical</a></span>(<span class="fu">h1</span>(<span class="fl">2</span>), <span class="fu">h2</span>(<span class="fl">2</span>))
 <span class="co">#&gt; [1] FALSE</span></pre></div>
-<p>See also, <a href="https://adv-r.hadley.nz/function-factories.html#forcing-evaluation">advanced-R</a>.</p>
 </div>
 </div>
   </div>

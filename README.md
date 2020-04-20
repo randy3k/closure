@@ -2,8 +2,6 @@
 
 # Tools to create and manipulate closures
 
-**WORKING IN PROGESS**
-
 <!-- badges: start -->
 
 <!-- badges: end -->
@@ -48,25 +46,35 @@ Foo2 <- toR6("Foo2", Foo1)
 foo2 <- Foo2$new(1)
 foo2$add(3)$counter
 #> [1] 4
+
+Foo3 <- toR6("Foo3", Foo1, portable = FALSE)
+foo3 <- Foo3$new(1)
+# method chaining does not work for non portable class
+foo3$add(3)
+foo3$counter
+#> [1] 4
 ```
 
-## Why?
+## Details
 
-First of all, closures are much faster.
+Why `closure` when there is `R6`? It’s because closures are much faster. Even faster than `R6` when `portable` is `TRUE`.
 
 ``` r
 bench::mark(
-    closure = foo1$add(3)$counter,
-    R6 = foo2$add(3)$counter
+    closure = foo1$add(3),
+    R6 = foo2$add(3),
+    `R6 Portable` = foo3$add(3),
+    check = FALSE
 )
-#> # A tibble: 2 x 6
-#>   expression      min   median `itr/sec` mem_alloc `gc/sec`
-#>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 closure      1.07µs   1.28µs   471158.        0B      0  
-#> 2 R6           5.99µs   6.69µs    95307.        0B     19.1
+#> # A tibble: 3 x 6
+#>   expression       min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 closure        704ns    839ns   714172.        0B     71.4
+#> 2 R6               4µs    4.6µs   158280.        0B     15.8
+#> 3 R6 Portable   1.75µs      2µs   344639.        0B      0
 ```
 
-And it is incredibly easier to make things wrong.
+Then why you need this package to write closure? Because it is incredibly easier to make things wrong. See the following example inspired by [advanced-R](https://adv-r.hadley.nz/function-factories.html#forcing-evaluation).
 
 ``` r
 g <- function(k) {
@@ -81,5 +89,3 @@ m <- 3
 identical(h1(2), h2(2))
 #> [1] FALSE
 ```
-
-See also, [advanced-R](https://adv-r.hadley.nz/function-factories.html#forcing-evaluation).
