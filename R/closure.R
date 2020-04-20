@@ -3,20 +3,20 @@
 #' @export
 new_closure <- function(members, parent_env = parent.frame(), keep_promise = character(0)) {
     member_names <- names(members)
+    stopifnot(all(nzchar(member_names)))
+    stopifnot(!anyDuplicated(member_names))
 
     main <- lapply(member_names, function(n) {
         obj <- members[[n]]
         if (is.function(obj)) {
-            photo_copy <- parse_expr(paste(deparse(obj), collapse = "\n"))
-            expr(!!sym(n) <- !!photo_copy)
+            expr(!!sym(n) <- !!fn_photo_copy(obj))
         } else {
             expr(!!sym(n) <- !!obj)
         }
     })
 
     if ("initialize" %in% member_names) {
-        initialize <- members[["initialize"]]
-        args <- fn_fmls(initialize)
+        args <- fn_fmls(members[["initialize"]])
         slots <- closure_slots(args, member_names)
         header <- slots$header
         footer <- slots$footer
@@ -26,7 +26,6 @@ new_closure <- function(members, parent_env = parent.frame(), keep_promise = cha
         footer <- list()
     }
 
-    # body placeholder
     new_function(
         args,
         expr({
@@ -68,12 +67,12 @@ closure_slots <- function(args, member_names) {
         }
     }
 
-    header <- list2(
-        !!!force_expr_list,
-        expr(on.exit({
+    header <- list2(!!!force_expr_list)
+    if (length(rm_expr_list) > 0) {
+        header <- append(header, exprs(on.exit({
             !!!rm_expr_list
-        }))
-    )
+        })))
+    }
     footer <- list2(
         call2(sym("initialize"), !!!initialize_vars),
     )

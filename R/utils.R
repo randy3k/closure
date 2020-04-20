@@ -20,3 +20,8 @@ fn_fmls_to_syms <- function(fmls) {
     names(fmls_syms)[match("...", nms)] <- ""
     syms(fmls_syms)
 }
+
+
+fn_photo_copy <- function(fn) {
+    parse_expr(paste(deparse(fn), collapse = "\n"))
+}
