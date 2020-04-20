@@ -2,18 +2,20 @@
 
 # Tools to create and manipulate closures
 
+**WORKING IN PROGESS**
+
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-Closures are often a poorman alternative to OOP (object oriental programming). However, closures are not portable and difficult to be inherited. Tools are provided to create and manipulate closures.
+Closures are often a poorman alternative to OOP (object oriental programming), not only because they could be easier implemented but because they are fast. However, it is quite easy to get things wrong if one is not careful enough. Tools are provided to create and manipulate closures.
 
 ## Installation
 
 You can install the released version of closure from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("closure")
+install.packages("closure")  # not yet released
 ```
 
 And the development version from [GitHub](https://github.com/) with:
@@ -28,35 +30,29 @@ devtools::install_github("randy3k/closure")
 ``` r
 library(closure)
 
-foo_closure <- function(x) {
-    self <- environment()
-    on.exit(rm(x))
-
-    counter <- NULL
-    initialize <- function(x) {
+Foo1 <- new_closure(list(
+    counter = NULL,
+    initialize = function(x) {
         counter <<- x
-    }
-    add <- function(x) {
+    },
+    add = function(x) {
         counter <<- counter + x
         invisible(self)
     }
-    initialize(x)
-    self
-}
-
-foo1 <- foo_closure(1)
+))
+foo1 <- Foo1(1)
 foo1$add(3)$counter
 #> [1] 4
 
-Foo <- toR6("Foo", foo_closure)
-foo2 <- Foo$new(1)
+Foo2 <- toR6("Foo2", Foo1)
+foo2 <- Foo2$new(1)
 foo2$add(3)$counter
 #> [1] 4
 ```
 
 ## Why?
 
-Closures are much faster.
+First of all, closures are much faster.
 
 ``` r
 bench::mark(
@@ -66,6 +62,24 @@ bench::mark(
 #> # A tibble: 2 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 closure       909ns   1.12µs   690452.        0B      0  
-#> 2 R6           5.49µs   6.08µs   106857.        0B     21.4
+#> 1 closure      1.07µs   1.28µs   471158.        0B      0  
+#> 2 R6           5.99µs   6.69µs    95307.        0B     19.1
 ```
+
+And it is incredibly easier to make things wrong.
+
+``` r
+g <- function(k) {
+    function(x) {
+        x^k
+    }
+}
+m <- 2
+h1 <- g(2)
+h2 <- g(m)
+m <- 3
+identical(h1(2), h2(2))
+#> [1] FALSE
+```
+
+See also, [advanced-R](https://adv-r.hadley.nz/function-factories.html#forcing-evaluation).

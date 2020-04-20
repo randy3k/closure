@@ -1,3 +1,4 @@
+# patch symbols recursively
 patch_symbols <- function(expr, public = character(0), private = character(0)) {
     if (is.symbol(expr)) {
         if (as.character(expr) %in% public) {
@@ -29,13 +30,17 @@ patch_symbols <- function(expr, public = character(0), private = character(0)) {
 
 #' @export
 toR6 <- function(classname, constructor) {
+    stopifnot(is.function(constructor))
+
     env <- environment(constructor)
-    lex_results <- lex(constructor)
+
+    arg_names <- c(names(formals(constructor)), "self")
+    lex_results <- lex(body(constructor))
 
     fields <- lex_results$fields
     methods <- lex_results$methods
 
-    public <- c(names(methods), names(fields))
+    public <- c(names(methods), setdiff(names(fields), arg_names))
     private <- list()
 
     for (m in seq_along(methods)) {
