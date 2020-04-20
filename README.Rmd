@@ -63,6 +63,16 @@ Foo1 <- new_closure(list(
         invisible(self)
     }
 ))
+```
+
+`Foo1` is actually just a function with the corresponding members.
+
+```{r}
+Foo1
+```
+
+
+```{r}
 foo1 <- Foo1(1)
 foo1$add(3)$counter
 

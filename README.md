@@ -38,6 +38,33 @@ Foo1 <- new_closure(list(
         invisible(self)
     }
 ))
+```
+
+`Foo1` is actually just a function with the corresponding members.
+
+``` r
+Foo1
+#> function (x) 
+#> {
+#>     self <- environment()
+#>     force(x)
+#>     on.exit({
+#>         rm(x)
+#>     })
+#>     counter <- NULL
+#>     initialize <- function(x) {
+#>         counter <<- x
+#>     }
+#>     add <- function(x) {
+#>         counter <<- counter + x
+#>         invisible(self)
+#>     }
+#>     initialize(x = x)
+#>     self
+#> }
+```
+
+``` r
 foo1 <- Foo1(1)
 foo1$add(3)$counter
 #> [1] 4
@@ -69,9 +96,9 @@ bench::mark(
 #> # A tibble: 3 x 6
 #>   expression       min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 closure        704ns    839ns   714172.        0B     71.4
-#> 2 R6               4µs    4.6µs   158280.        0B     15.8
-#> 3 R6 Portable   1.75µs      2µs   344639.        0B      0
+#> 1 closure        657ns    848ns   523531.        0B      0  
+#> 2 R6            3.88µs   4.51µs   157162.        0B     15.7
+#> 3 R6 Portable   1.62µs   1.93µs   371429.        0B      0
 ```
 
 Then why you need this package to write closure? Because it is incredibly easier to make things wrong. See the following example inspired by [advanced-R](https://adv-r.hadley.nz/function-factories.html#forcing-evaluation).
